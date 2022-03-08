@@ -1,4 +1,3 @@
-#!/bin/lua
 --[[
     vurl interpreter
     viba, march 2022
@@ -196,7 +195,7 @@ function run(code)
     
     local lineNumber = 1
     for line in string.gmatch(code, "[^\n]+") do
-        if not string.match(line, "^%s+$") then
+        if (not string.match(line, "^%s*#%s")) and (not string.match(line, "^%s+$")) then
             local pl = parseLine(line)
             table.insert(lines, pl)
 
