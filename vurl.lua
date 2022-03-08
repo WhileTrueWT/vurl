@@ -1,3 +1,4 @@
+#!/bin/lua
 --[[
     vurl interpreter
     viba, march 2022
