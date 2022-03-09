@@ -174,7 +174,7 @@ local function parseLine(line)
             parsedArgs[i] = {type="var", value=string.sub(arg, 2, -2)}
         elseif string.match(arg, "^%(.+%)$") then
             parsedArgs[i] = {type="cmd", value=parseLine(string.sub(arg, 2, -2))}
-        elseif string.match(arg, "^\"(.+)\"$") then
+        elseif string.match(arg, "^\"(.*)\"$") then
             parsedArgs[i] = {type="lit", value=string.sub(arg, 2, -2)}
         else
             parsedArgs[i] = {type="lit", value=arg}
