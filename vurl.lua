@@ -84,15 +84,15 @@ local commands = {
     end,
     
     ["and"] = function(a)
-        return (a[1]==1 and a[2]==1) and '1' or '0'
+        return (a[1]=='1' and a[2]=='1') and '1' or '0'
     end,
     
     ["or"] = function(a)
-        return (a[1]==1 or a[2]==1) and '1' or '0'
+        return (a[1]=='1' or a[2]=='1') and '1' or '0'
     end,
     
     ["not"] = function(a)
-        return (a[1]==0) and '1' or '0'
+        return (a[1]=='0') and '1' or '0'
     end,
     
     ["if"] = function(a)
