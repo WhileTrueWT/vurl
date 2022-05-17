@@ -24,23 +24,48 @@ local commands = {
     list = function(a)
         return a
     end,
+    -- I upset myself
     insert = function(a)
-        table.insert(mem[a[1]], a[2], a[3])
+        if string.match(a[1], "^%.") and #returnStack > 0 then
+            table.insert(returnStack[#returnStack].locals[a[1]], a[2], a[3])
+        else
+            table.insert(mem[a[1]], a[2], a[3])
+        end
     end,
     push = function(a)
-        table.insert(mem[a[1]], a[2])
+        if string.match(a[1], "^%.") and #returnStack > 0 then
+            table.insert(returnStack[#returnStack].locals[a[1]], a[2])
+        else
+            table.insert(mem[a[1]], a[2])
+        end
     end,
     remove = function(a)
-        return table.remove(mem[a[1]], a[2]) or ""
+        if string.match(a[1], "^%.") and #returnStack > 0 then
+            return table.remove(returnStack[#returnStack].locals[a[1]], a[2]) or ""
+        else
+            return table.remove(mem[a[1]], a[2]) or ""
+        end
     end,
     pop = function(a)
-        return table.remove(mem[a[1]]) or ""
+        if string.match(a[1], "^%.") and #returnStack > 0 then
+            return table.remove(returnStack[#returnStack].locals[a[1]]) or ""
+        else
+            return table.remove(mem[a[1]]) or ""
+        end
     end,
     index = function(a)
-        return mem[a[1]][tonumber(a[2])] or ""
+        if string.match(a[1], "^%.") and #returnStack > 0 then
+            return returnStack[#returnStack].locals[a[1]][tonumber(a[2])] or ""
+        else
+            return mem[a[1]][tonumber(a[2])] or ""
+        end
     end,
     replace = function(a)
-        mem[a[1]][tonumber(a[2])] = a[3]
+        if string.match(a[1], "^%.") and #returnStack > 0 then
+            returnStack[#returnStack].locals[a[1]][tonumber(a[2])] = a[3]
+        else
+            mem[a[1]][tonumber(a[2])] = a[3]
+        end
     end,
     
     add = function(a)
