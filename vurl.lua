@@ -1,3 +1,4 @@
+#!/bin/lua
 --[[
     vurl interpreter
     viba, march 2022
@@ -13,39 +14,51 @@ local runCode
 
 local commands = {
     set = function(a)
-        mem[a[1]] = a[2]
+        if string.match(a[1], "^%.") and #returnStack > 0 then
+            returnStack[#returnStack].locals[a[1]] = a[2]
+        else
+            mem[a[1]] = a[2]
+        end
     end,
     
     list = function(a)
         return a
     end,
     insert = function(a)
-        table.insert(a[1], a[2], a[3])
+        table.insert(mem[a[1]], a[2], a[3])
     end,
     push = function(a)
-        table.insert(a[1], a[2])
+        table.insert(mem[a[1]], a[2])
     end,
     remove = function(a)
-        return table.remove(a[1], a[2]) or ""
+        return table.remove(mem[a[1]], a[2]) or ""
     end,
     pop = function(a)
-        return table.remove(a[1]) or ""
+        return table.remove(mem[a[1]]) or ""
     end,
     index = function(a)
-        return a[1][tonumber(a[2])] or ""
+        return mem[a[1]][tonumber(a[2])] or ""
     end,
     replace = function(a)
-        a[1][tonumber(a[2])] = a[3]
+        mem[a[1]][tonumber(a[2])] = a[3]
     end,
     
     add = function(a)
-        return tostring(tonumber(a[1]) + tonumber(a[2]))
+        local n = 0
+        for _, x in ipairs(a) do
+            n = n + tonumber(x)
+        end
+        return tostring(n)
     end,
     sub = function(a)
         return tostring(tonumber(a[1]) - tonumber(a[2]))
     end,
     mul = function(a)
-        return tostring(tonumber(a[1]) * tonumber(a[2]))
+        local n = 1
+        for _, x in ipairs(a) do
+            n = n * tonumber(x)
+        end
+        return tostring(n)
     end,
     div = function(a)
         return tostring(tonumber(a[1]) / tonumber(a[2]))
@@ -54,7 +67,11 @@ local commands = {
         return tostring(tonumber(a[1]) % tonumber(a[2]))
     end,
     join = function(a)
-        return a[1] .. a[2]
+        local s = ""
+        for _, x in ipairs(a) do
+            s = s .. x
+        end
+        return s
     end,
     len = function(a)
         return #a[1]
@@ -113,7 +130,15 @@ local commands = {
     end,
     
     call = function(a)
-        table.insert(returnStack, lp)
+        local args = {}
+        for i, arg in ipairs(a) do
+            if i > 1 then table.insert(args, arg) end
+        end
+        
+        local locals = {[".args"] = args}
+        setmetatable(locals, {__index = mem})
+        table.insert(returnStack, {lp=lp, locals=locals})
+        
         lp = mem[a[1]]
     end,
     
@@ -121,7 +146,7 @@ local commands = {
         if branches[lp].type == "while" then
             lp = branches[lp].value - 1
         elseif branches[lp].type == "define" then
-            lp = table.remove(returnStack)
+            lp = table.remove(returnStack).lp
         end
     end,
     
@@ -217,7 +242,11 @@ function run(code)
         local args = {}
         for i, a in ipairs(line.args) do
             if a.type == "var" then
-                args[i] = mem[a.value]
+                if string.match(a.value, "^%.") and #returnStack > 0 then
+                    args[i] = returnStack[#returnStack].locals[a.value]
+                else
+                    args[i] = mem[a.value]
+                end
             elseif a.type == "cmd" then
                 args[i] = runLine(a.value)
             elseif a.type == "lit" then
